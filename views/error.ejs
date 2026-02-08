@@ -1,0 +1,18 @@
+<%- include('partials/header') %>
+
+<div class="min-h-screen gradient-bg flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <div class="glass rounded-3xl shadow-2xl p-8 sm:p-12 text-center border border-white/20">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-red-100 text-red-500 mb-6">
+                <i class="bi bi-exclamation-triangle-fill text-4xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Error</h2>
+            <p class="text-slate-600 mb-8"><%= typeof error !== 'undefined' ? error : 'An error occurred' %></p>
+            <a href="/" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold btn-glow">
+                <i class="bi bi-house-door"></i> Go to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

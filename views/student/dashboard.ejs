@@ -1,0 +1,148 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="min-h-screen gradient-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center"><i class="bi bi-speedometer2"></i></span>
+                Student Dashboard
+            </h1>
+            <p class="text-slate-300 mt-1">Welcome, <%= student.name %></p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="rounded-2xl bg-white/95 backdrop-blur p-5 shadow-soft border border-slate-200/80">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Student ID</p>
+                        <p class="text-xl font-bold text-slate-800 mt-0.5"><%= student.studentId || 'Pending' %></p>
+                    </div>
+                    <span class="w-10 h-10 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center"><i class="bi bi-person-badge"></i></span>
+                </div>
+            </div>
+            <div class="rounded-2xl bg-white/95 backdrop-blur p-5 shadow-soft border border-slate-200/80">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Course</p>
+                        <p class="text-xl font-bold text-slate-800 mt-0.5"><%= student.course ? student.course.name : 'Not Assigned' %></p>
+                    </div>
+                    <span class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="bi bi-book"></i></span>
+                </div>
+            </div>
+            <div class="rounded-2xl bg-white/95 backdrop-blur p-5 shadow-soft border border-slate-200/80">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Section</p>
+                        <p class="text-xl font-bold text-slate-800 mt-0.5"><%= student.section ? student.section.name : 'Not Assigned' %></p>
+                    </div>
+                    <span class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i class="bi bi-diagram-3"></i></span>
+                </div>
+            </div>
+            <div class="rounded-2xl bg-white/95 backdrop-blur p-5 shadow-soft border border-slate-200/80">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Year</p>
+                        <p class="text-xl font-bold text-slate-800 mt-0.5">Year <%= student.year || '-' %></p>
+                    </div>
+                    <span class="w-10 h-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center"><i class="bi bi-calendar-event"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-2xl bg-white/95 backdrop-blur shadow-soft border border-slate-200/80 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/80">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="bi bi-calendar-day text-primary-500"></i> Today's Schedule</h2>
+            </div>
+            <div class="p-6">
+                <% if (todaySchedule && todaySchedule.length > 0) { %>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-600 text-sm font-semibold">
+                                    <th class="pb-3 pr-4">Time</th>
+                                    <th class="pb-3 pr-4">Subject</th>
+                                    <th class="pb-3 pr-4">Faculty</th>
+                                    <th class="pb-3 pr-4">Room</th>
+                                    <th class="pb-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-row-hover">
+                                <% todaySchedule.forEach(schedule => { %>
+                                    <tr class="border-b border-slate-100">
+                                        <td class="py-3 pr-4 font-medium"><%= schedule.startTime %> - <%= schedule.endTime %></td>
+                                        <td class="py-3 pr-4"><%= schedule.subject.name %></td>
+                                        <td class="py-3 pr-4"><%= schedule.faculty.name %></td>
+                                        <td class="py-3 pr-4"><%= schedule.room || '-' %></td>
+                                        <td class="py-3">
+                                            <% if (schedule.attendanceStatus === 'present') { %>
+                                                <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-100 text-emerald-700">Present</span>
+                                            <% } else if (schedule.attendanceStatus === 'absent') { %>
+                                                <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-100 text-rose-700">Absent</span>
+                                            <% } else if (schedule.attendanceStatus === 'leave') { %>
+                                                <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-100 text-sky-700">Leave</span>
+                                            <% } else { %>
+                                                <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-100 text-amber-700">N/A</span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-slate-500 text-center py-8">No classes scheduled for today</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="rounded-2xl bg-white/95 backdrop-blur shadow-soft border border-slate-200/80 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/80">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="bi bi-clipboard-check text-emerald-500"></i> Attendance Summary</h2>
+            </div>
+            <div class="p-6">
+                <% if (subjectAttendance && subjectAttendance.length > 0) { %>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-600 text-sm font-semibold">
+                                    <th class="pb-3 pr-4">Subject</th>
+                                    <th class="pb-3 pr-4">Present</th>
+                                    <th class="pb-3 pr-4">Absent</th>
+                                    <th class="pb-3 pr-4">Leave</th>
+                                    <th class="pb-3 pr-4">Total</th>
+                                    <th class="pb-3">%</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-row-hover">
+                                <% subjectAttendance.forEach(item => { %>
+                                    <tr class="border-b border-slate-100">
+                                        <td class="py-3 pr-4 font-medium"><%= item.subject.name %></td>
+                                        <td class="py-3 pr-4"><span class="inline-flex px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-sm font-medium"><%= item.present %></span></td>
+                                        <td class="py-3 pr-4"><span class="inline-flex px-2 py-0.5 rounded bg-rose-100 text-rose-700 text-sm font-medium"><%= item.absent %></span></td>
+                                        <td class="py-3 pr-4"><span class="inline-flex px-2 py-0.5 rounded bg-sky-100 text-sky-700 text-sm font-medium"><%= item.leave || 0 %></span></td>
+                                        <td class="py-3 pr-4 font-medium"><%= item.total %></td>
+                                        <td class="py-3">
+                                            <% const percent = parseFloat(item.percentage); %>
+                                            <% if (percent >= 75) { %>
+                                                <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-100 text-emerald-700"><%= percent %>%</span>
+                                            <% } else if (percent >= 60) { %>
+                                                <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-100 text-amber-700"><%= percent %>%</span>
+                                            <% } else { %>
+                                                <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-100 text-rose-700"><%= percent %>%</span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-slate-500 text-center py-8">No attendance records found</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

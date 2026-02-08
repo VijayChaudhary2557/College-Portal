@@ -1,0 +1,92 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="min-h-screen gradient-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center"><i class="bi bi-speedometer2"></i></span>
+                Faculty Schedule
+            </h1>
+            <p class="text-slate-300 mt-1">Welcome, <%= faculty.name %> — <%= faculty.position %> of Section: <%= faculty.section ? faculty.section.name : 'No Section Assigned' %></p>
+        </div>
+
+        <div class="rounded-2xl bg-white/95 backdrop-blur shadow-soft border border-slate-200/80 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-slate-200 bg-primary-500 text-white">
+                <h2 class="font-bold flex items-center gap-2"><i class="bi bi-calendar-day"></i> Today's Schedule</h2>
+            </div>
+            <div class="p-6">
+                <% if (todaySchedule && todaySchedule.length > 0) { %>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-600 text-sm font-semibold">
+                                    <th class="pb-3 pr-4">Time</th>
+                                    <th class="pb-3 pr-4">Subject</th>
+                                    <th class="pb-3 pr-4">Section</th>
+                                    <th class="pb-3 pr-4">Room</th>
+                                    <th class="pb-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-row-hover">
+                                <% todaySchedule.forEach(schedule => { %>
+                                    <tr class="border-b border-slate-100">
+                                        <td class="py-3 pr-4"><%= schedule.startTime %> - <%= schedule.endTime %></td>
+                                        <td class="py-3 pr-4 font-medium"><%= schedule.subject.name %></td>
+                                        <td class="py-3 pr-4"><%= schedule.section.name %></td>
+                                        <td class="py-3 pr-4"><%= schedule.room || '-' %></td>
+                                        <td class="py-3">
+                                            <a href="/faculty/attendance/<%= schedule._id %>" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium">
+                                                <i class="bi bi-check-square"></i> Mark Attendance
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-slate-500 text-center py-8">No classes scheduled for today</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="rounded-2xl bg-white/95 backdrop-blur shadow-soft border border-slate-200/80 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-sky-500 text-white">
+                <h2 class="font-bold flex items-center gap-2"><i class="bi bi-calendar3"></i> Complete Schedule</h2>
+            </div>
+            <div class="p-6">
+                <% if (allSchedules && allSchedules.length > 0) { %>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-600 text-sm font-semibold">
+                                    <th class="pb-3 pr-4">Day</th>
+                                    <th class="pb-3 pr-4">Time</th>
+                                    <th class="pb-3 pr-4">Subject</th>
+                                    <th class="pb-3 pr-4">Section</th>
+                                    <th class="pb-3">Room</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-row-hover">
+                                <% allSchedules.forEach(schedule => { %>
+                                    <tr class="border-b border-slate-100">
+                                        <td class="py-3 pr-4 font-medium"><%= schedule.day %></td>
+                                        <td class="py-3 pr-4"><%= schedule.startTime %> - <%= schedule.endTime %></td>
+                                        <td class="py-3 pr-4"><%= schedule.subject.name %></td>
+                                        <td class="py-3 pr-4"><%= schedule.section.name %></td>
+                                        <td class="py-3"><%= schedule.room || '-' %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-slate-500 text-center py-8">No schedule available</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

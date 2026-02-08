@@ -1,0 +1,242 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="min-h-screen bg-slate-900 py-10">
+  <div class="max-w-5xl mx-auto px-4">
+
+    <!-- LIGHT FORM CARD -->
+    <div class="bg-white rounded-xl shadow-xl border">
+
+      <!-- Header -->
+      <div class="px-8 py-6 border-b">
+        <h1 class="text-2xl font-bold text-slate-800">Resume Builder</h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Fill your resume details carefully. You can update them anytime.
+        </p>
+      </div>
+
+      <form action="/student/resume" method="POST" class="px-8 py-6 space-y-10">
+
+        <!-- PERSONAL INFO -->
+        <section>
+          <h2 class="section-title">Personal Information</h2>
+          <div class="grid sm:grid-cols-2 gap-4 mt-4">
+            <input class="input" name="fullName" placeholder="Full Name *"
+              value="<%= resume ? resume.fullName : '' %>" required>
+
+            <input class="input" type="email" name="email" placeholder="Email *"
+              value="<%= resume ? resume.email : '' %>" required>
+
+            <input class="input" name="phone" placeholder="Phone *"
+              value="<%= resume ? resume.phone : '' %>" required>
+
+            <input class="input" name="location" placeholder="City, State"
+              value="<%= resume ? resume.location : '' %>">
+
+            <input class="input" name="jobTitle" placeholder="Interested (e.g. Full Stack Web Developer)" value="<%= resume ? resume.jobTitle : '' %>" >
+          </div>
+        </section>
+
+        <!-- SUMMARY -->
+        <section>
+          <h2 class="section-title">Professional Summary</h2>
+          <textarea class="input h-28 mt-4" name="objective" required
+            placeholder="2–3 lines about your skills and career goals"><%= resume ? resume.professionalSummary : '' %></textarea>
+        </section>
+
+
+        <section>
+  <h2 class="section-title">Professional Links</h2>
+  <div class="grid sm:grid-cols-3 gap-4 mt-4">
+
+    <input class="input"
+      name="github"
+      placeholder="GitHub Profile URL"
+      value="<%= resume && resume.links ? resume.links.github : '' %>">
+
+    <input class="input"
+      name="linkedin"
+      placeholder="LinkedIn Profile URL"
+      value="<%= resume && resume.links ? resume.links.linkedin : '' %>">
+
+    <input class="input"
+      name="portfolio"
+      placeholder="Portfolio Website URL"
+      value="<%= resume && resume.links ? resume.links.portfolio : '' %>">
+
+  </div>
+</section>
+
+        <!-- EDUCATION -->
+        <section>
+          <div class="flex justify-between items-center">
+            <h2 class="section-title">Education</h2>
+            <button type="button" onclick="addEducation()" class="add-btn">+ Add</button>
+          </div>
+
+          <div id="educationContainer" class="space-y-4 mt-4">
+            <% if (resume && resume.education && resume.education.length > 0) { %>
+              <% resume.education.forEach(edu => { %>
+                <div class="block-card">
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <input name="educationDegree[]" class="input" value="<%= edu.degree %>" required>
+                    <input name="educationInstitute[]" class="input" value="<%= edu.institute %>" required>
+                    <input name="educationYear[]" class="input" value="<%= edu.year %>" required>
+                    <input name="educationScore[]" class="input" value="<%= edu.score %>">
+                  </div>
+                  <button type="button" onclick="this.parentElement.remove()" class="remove-btn">Remove</button>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </section>
+
+        <!-- SKILLS -->
+        <section>
+          <div class="flex justify-between items-center">
+            <h2 class="section-title">Skills</h2>
+            <button type="button" onclick="addSkill()" class="add-btn">+ Add</button>
+          </div>
+
+          <div id="skillsContainer" class="flex flex-wrap gap-2 mt-4">
+            <% if (resume && resume.skills && resume.skills.length > 0) { %>
+              <% resume.skills.forEach(skill => { %>
+                <div class="skill-chip">
+                  <input name="skills[]" class="skill-input" value="<%= skill %>" required>
+                  <button type="button" onclick="this.parentElement.remove()">×</button>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </section>
+
+        <!-- EXPERIENCE -->
+        <section>
+          <div class="flex justify-between items-center">
+            <h2 class="section-title">Experience</h2>
+            <button type="button" onclick="addExperience()" class="add-btn">+ Add</button>
+          </div>
+
+          <div id="experienceContainer" class="space-y-4 mt-4">
+            <% if (resume && resume.experience && resume.experience.length > 0) { %>
+              <% resume.experience.forEach(exp => { %>
+                <div class="block-card">
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <input name="experienceCompany[]" class="input" value="<%= exp.company %>">
+                    <input name="experienceRole[]" class="input" value="<%= exp.role %>">
+                  </div>
+                  <textarea name="experienceDesc[]" class="input mt-3"><%= exp.description %></textarea>
+                  <button type="button" onclick="this.parentElement.remove()" class="remove-btn">Remove</button>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </section>
+
+        <!-- PROJECTS -->
+        <section>
+          <div class="flex justify-between items-center">
+            <h2 class="section-title">Projects</h2>
+            <button type="button" onclick="addProject()" class="add-btn">+ Add</button>
+          </div>
+
+          <div id="projectContainer" class="space-y-4 mt-4">
+            <% if (resume && resume.projects && resume.projects.length > 0) { %>
+              <% resume.projects.forEach(p => { %>
+                <div class="block-card">
+                  <input name="projectTitle[]" class="input mb-3" value="<%= p.title %>" required>
+                  <textarea name="projectDesc[]" class="input" required><%= p.description %></textarea>
+                  <button type="button" onclick="this.parentElement.remove()" class="remove-btn">Remove</button>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </section>
+
+        <!-- ACTIONS -->
+        <div class="pt-6 flex gap-4 border-t">
+          <button type="submit" class="primary-btn">Save Resume</button>
+<a href="/student/resume/view"
+   class="flex items-center gap-2 px-5 py-2.5 rounded-lg
+          bg-slate-800 text-white font-semibold
+          hover:bg-slate-900 transition shadow">
+   <i class="bi bi-file-earmark-text"></i> View Resume
+</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- STYLES -->
+<style>
+  .section-title { font-size: 1.05rem; font-weight: 600; color: #334155; }
+  .input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #cbd5e1; }
+  .input:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,.2); outline: none; }
+  .add-btn { font-size: .875rem; color: #4f46e5; font-weight: 500; }
+  .primary-btn { padding: 12px 20px; background: #4f46e5; color: #fff; border-radius: 8px; font-weight: 600; }
+  .secondary-btn { padding: 12px 20px; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; color: #475569; }
+  .block-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: #f8fafc; }
+  .remove-btn { margin-top: 8px; font-size: .875rem; color: #ef4444; }
+  .skill-chip { display: flex; align-items: center; gap: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 999px; }
+  .skill-input { background: transparent; outline: none; width: 90px; }
+</style>
+
+<!-- SCRIPT -->
+<script>
+  function addEducation() {
+    document.getElementById('educationContainer').insertAdjacentHTML('beforeend', `
+      <div class="block-card">
+        <div class="grid sm:grid-cols-2 gap-3">
+          <input name="educationDegree[]" class="input" placeholder="Degree" required>
+          <input name="educationInstitute[]" class="input" placeholder="Institute" required>
+          <input name="educationYear[]" class="input" placeholder="Year" required>
+          <input name="educationScore[]" class="input" placeholder="CGPA / %">
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" class="remove-btn">Remove</button>
+      </div>
+    `);
+  }
+
+  function addSkill() {
+    document.getElementById('skillsContainer').insertAdjacentHTML('beforeend', `
+      <div class="skill-chip">
+        <input name="skills[]" class="skill-input" placeholder="Skill" required>
+        <button type="button" onclick="this.parentElement.remove()">×</button>
+      </div>
+    `);
+  }
+
+  function addExperience() {
+    document.getElementById('experienceContainer').insertAdjacentHTML('beforeend', `
+      <div class="block-card">
+        <div class="grid sm:grid-cols-2 gap-3">
+          <input name="experienceCompany[]" class="input" placeholder="Company">
+          <input name="experienceRole[]" class="input" placeholder="Role">
+        </div>
+        <textarea name="experienceDesc[]" class="input mt-3" placeholder="Description"></textarea>
+        <button type="button" onclick="this.parentElement.remove()" class="remove-btn">Remove</button>
+      </div>
+    `);
+  }
+
+  function addProject() {
+    document.getElementById('projectContainer').insertAdjacentHTML('beforeend', `
+      <div class="block-card">
+        <input name="projectTitle[]" class="input mb-3" placeholder="Project Title" required>
+        <textarea name="projectDesc[]" class="input" placeholder="Project Description" required></textarea>
+        <button type="button" onclick="this.parentElement.remove()" class="remove-btn">Remove</button>
+      </div>
+    `);
+  }
+
+  <% if (!resume) { %>
+    addEducation();
+    addSkill();
+    addExperience();
+    addProject();
+  <% } %>
+</script>
+
+<%- include('../partials/footer') %>

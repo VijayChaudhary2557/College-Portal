@@ -1,0 +1,73 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="min-h-screen gradient-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center"><i class="bi bi-speedometer2"></i></span>
+                Faculty Dashboard
+            </h1>
+            <p class="text-slate-300 mt-1">Welcome, <%= faculty.name %> — <%= faculty.position %> of Section: <%= faculty.section ? faculty.section.name : 'No Section Assigned' %></p>
+        </div>
+
+        <div class="rounded-2xl bg-white/95 backdrop-blur shadow-soft border border-slate-200/80 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-amber-50/80">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="bi bi-hourglass-split text-amber-600"></i> Pending Leave Approvals</h2>
+            </div>
+            <div class="p-6">
+                <% if (pendingLeaves && pendingLeaves.length > 0) { %>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-600 text-sm font-semibold">
+                                    <th class="pb-3 pr-4">Student</th>
+                                    <th class="pb-3 pr-4">Date</th>
+                                    <th class="pb-3 pr-4">Reason</th>
+                                    <th class="pb-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-row-hover">
+                                <% pendingLeaves.forEach(leave => { %>
+                                    <tr class="border-b border-slate-100">
+                                        <td class="py-3 pr-4 font-medium"><%= leave.student.name %></td>
+                                        <td class="py-3 pr-4"><%= new Date(leave.date).toLocaleDateString() %></td>
+                                        <td class="py-3 pr-4 text-slate-600"><%= leave.reason %></td>
+                                        <td class="py-3 flex gap-2">
+                                            <form action="/class-advisor/leave/<%= leave._id %>/approve" method="POST" class="inline">
+                                                <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium">Approve</button>
+                                            </form>
+                                            <button type="button" onclick="rejectLeave('<%= leave._id %>')" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium">Reject</button>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-slate-500 text-center py-8">No pending leaves</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function rejectLeave(leaveId) {
+    var reason = prompt('Enter rejection reason:');
+    if (reason) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/class-advisor/leave/' + leaveId + '/reject';
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'reason';
+        input.value = reason;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,105 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="min-h-screen gradient-bg">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center"><i class="bi bi-check-square"></i></span>
+                Mark Attendance
+            </h1>
+        </div>
+
+        <div class="rounded-2xl bg-white/95 backdrop-blur shadow-soft border border-slate-200/80 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-primary-500 text-white flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-bold"><%= timetable.subject.name %> — <%= timetable.section.name %></h2>
+                <span class="text-primary-100"><%= new Date(today).toLocaleDateString() %></span>
+            </div>
+            <div class="p-6">
+                <form action="/faculty/attendance/<%= timetable._id %>" method="POST">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-slate-600 text-sm font-semibold">
+                                    <th class="pb-3 pr-4">
+                                        <input type="checkbox" id="selectAllAttendance" class="w-4 h-4 rounded border-2 border-slate-300 text-primary-600 cursor-pointer"> Select
+                                    </th>
+                                    <th class="pb-3 pr-4">Student Name</th>
+                                    <th class="pb-3">Student ID</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-row-hover">
+                                <% if (students && students.length > 0) { %>
+                                    <% students.forEach(student => { %>
+                                        <tr class="border-b border-slate-100">
+                                            <td class="py-3 pr-4">
+                                                <input type="hidden" name="attendance[<%= student._id %>]" id="attendance-<%= student._id %>" value="<%= attendanceMap && attendanceMap[student._id.toString()] ? attendanceMap[student._id.toString()] : 'absent' %>">
+                                                <button type="button" class="attendance-btn px-3 py-1.5 rounded-lg text-sm font-medium <%= attendanceMap && attendanceMap[student._id.toString()] === 'present' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white' %>" data-student-id="<%= student._id %>">
+                                                    <%= attendanceMap && attendanceMap[student._id.toString()] === 'present' ? 'Present' : 'Absent' %>
+                                                </button>
+                                            </td>
+                                            <td class="py-3 pr-4 font-medium"><%= student.name %></td>
+                                            <td class="py-3"><%= student.studentId || '-' %></td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr><td colspan="3" class="py-8 text-center text-slate-500">No students in this section</td></tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6 flex gap-3">
+                        <button type="submit" class="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold flex items-center gap-2">
+                            <i class="bi bi-save"></i> Save Attendance
+                        </button>
+                        <a href="/faculty/dashboard" class="px-6 py-3 rounded-xl border-2 border-slate-300 text-slate-700 font-semibold">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("attendance-btn")) {
+        var btn = e.target;
+        var studentId = btn.dataset.studentId;
+        var input = document.getElementById("attendance-" + studentId);
+        if (!input) return;
+        var current = input.value || "absent";
+        if (current === "absent") {
+            input.value = "present";
+            btn.classList.remove("bg-rose-500");
+            btn.classList.add("bg-emerald-500");
+            btn.innerText = "Present";
+        } else {
+            input.value = "absent";
+            btn.classList.remove("bg-emerald-500");
+            btn.classList.add("bg-rose-500");
+            btn.innerText = "Absent";
+        }
+    }
+    if (e.target.id === "selectAllAttendance") {
+        var isChecked = e.target.checked;
+        document.querySelectorAll(".attendance-btn").forEach(function(btn) {
+            var studentId = btn.dataset.studentId;
+            var input = document.getElementById("attendance-" + studentId);
+            if (!input) return;
+            if (isChecked) {
+                input.value = "present";
+                btn.classList.remove("bg-rose-500");
+                btn.classList.add("bg-emerald-500");
+                btn.innerText = "Present";
+            } else {
+                input.value = "absent";
+                btn.classList.remove("bg-emerald-500");
+                btn.classList.add("bg-rose-500");
+                btn.innerText = "Absent";
+            }
+        });
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>

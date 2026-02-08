@@ -1,0 +1,157 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<div class="min-h-screen gradient-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center"><i class="bi bi-calendar3"></i></span>
+                Timetable Management
+            </h1>
+        </div>
+
+        <div class="rounded-2xl bg-white/95 backdrop-blur shadow-soft border border-slate-200/80 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-slate-200 bg-primary-500 text-white">
+                <h2 class="font-bold flex items-center gap-2"><i class="bi bi-plus-circle"></i> Add Timetable Entry</h2>
+            </div>
+            <div class="p-6">
+                <form action="/coordinator/timetable" method="POST" class="space-y-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Section</label>
+                            <select name="section" required class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none">
+                                <option value="">Select Section...</option>
+                                <% sections.forEach(section => { %>
+                                    <option value="<%= section._id %>"><%= section.name %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Subject</label>
+                            <select name="subject" id="subjectSelect" required class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none">
+                                <option value="">Select Section First...</option>
+                            </select>
+                            <p class="text-xs text-slate-500 mt-1">Select section to see available subjects</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Faculty</label>
+                            <select name="faculty" required class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none">
+                                <option value="">Select Faculty...</option>
+                                <% faculties.forEach(faculty => { %>
+                                    <option value="<%= faculty._id %>"><%= faculty.name %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Day</label>
+                            <select name="day" required class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none">
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Start Time</label>
+                            <input type="time" name="startTime" required class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">End Time</label>
+                            <input type="time" name="endTime" required class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Room</label>
+                            <input type="text" name="room" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-primary-500 outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold btn-glow">Add Entry</button>
+                </form>
+            </div>
+        </div>
+
+        <% if (timetables && timetables.length > 0) { %>
+            <%
+            const sectionsMap = {};
+            timetables.forEach(tt => {
+                const sectionName = tt.section ? tt.section.name : 'Unknown';
+                if (!sectionsMap[sectionName]) sectionsMap[sectionName] = [];
+                sectionsMap[sectionName].push(tt);
+            });
+            %>
+            <div class="rounded-2xl bg-white/95 backdrop-blur shadow-soft border border-slate-200/80 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-200 bg-emerald-500 text-white">
+                    <h2 class="font-bold flex items-center gap-2"><i class="bi bi-list"></i> Existing Timetable Entries</h2>
+                </div>
+                <div class="p-6 space-y-6">
+                    <% Object.keys(sectionsMap).forEach(sectionName => { %>
+                        <div>
+                            <h3 class="text-primary-600 font-bold flex items-center gap-2 mb-3"><i class="bi bi-people"></i> Section: <%= sectionName %></h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border border-slate-200 rounded-xl overflow-hidden">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-slate-600 text-sm font-semibold">
+                                            <th class="p-3 border-b border-slate-200">Day</th>
+                                            <th class="p-3 border-b border-slate-200">Time</th>
+                                            <th class="p-3 border-b border-slate-200">Subject</th>
+                                            <th class="p-3 border-b border-slate-200">Faculty</th>
+                                            <th class="p-3 border-b border-slate-200">Room</th>
+                                            <th class="p-3 border-b border-slate-200 text-center">Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="table-row-hover">
+                                        <% sectionsMap[sectionName].forEach(tt => { %>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="p-3"><%= tt.day %></td>
+                                                <td class="p-3"><%= tt.startTime %> - <%= tt.endTime %></td>
+                                                <td class="p-3 font-medium"><%= tt.subject ? tt.subject.name : 'N/A' %> (<%= tt.subject ? tt.subject.code : 'N/A' %>)</td>
+                                                <td class="p-3"><%= tt.faculty ? tt.faculty.name : 'N/A' %></td>
+                                                <td class="p-3"><%= tt.room || 'N/A' %></td>
+                                                <td class="p-3 text-center">
+                                                    <a href="/coordinator/timetable/<%= tt._id %>" class="inline-flex px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium">Delete</a>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+document.querySelector('select[name="section"]').addEventListener('change', function() {
+    var sectionId = this.value;
+    var subjectSelect = document.getElementById('subjectSelect');
+    var allSubjects = <%- JSON.stringify(subjects.map(s => ({ id: s._id.toString(), name: s.name, code: s.code, section: s.section ? s.section.toString() : null, year: s.year }))) %>;
+    var selectedSection = <%- JSON.stringify(sections.map(s => ({ id: s._id.toString(), name: s.name, year: s.year }))) %>.find(function(s) { return s.id === sectionId; });
+    subjectSelect.innerHTML = '<option value="">Select Subject...</option>';
+    if (sectionId && selectedSection) {
+        var filteredSubjects = allSubjects.filter(function(subject) {
+            return subject.year === selectedSection.year && (subject.section === null || subject.section === sectionId);
+        });
+        filteredSubjects.forEach(function(subject) {
+            var option = document.createElement('option');
+            option.value = subject.id;
+            option.textContent = subject.name + ' (' + subject.code + ')';
+            subjectSelect.appendChild(option);
+        });
+        if (filteredSubjects.length === 0) {
+            var option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No subjects available for this section';
+            option.disabled = true;
+            subjectSelect.appendChild(option);
+        }
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>
