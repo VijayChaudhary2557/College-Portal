@@ -6,6 +6,8 @@ const Placement = require('../models/Placement');
 const Course = require('../models/Course');
 const Notification = require('../models/Notification');
 const { sendPlacementNotification, sendPlacementReminder } = require('../utils/email');
+const Resume = require('../models/Resume');
+
 
 // Placement Manager Dashboard
 router.get('/dashboard', isAuthenticated, hasRole('placement-manager'), async (req, res) => {
@@ -48,6 +50,36 @@ router.get('/create', isAuthenticated, hasRole('placement-manager'), async (req,
     res.redirect('/placement/dashboard');
   }
 });
+
+
+
+
+
+function countMatchingSkills(studentSkills = [], requiredSkills = []) {
+
+  // student skills normalize
+  const studentSet = studentSkills.map(s => s.toLowerCase().trim());
+
+  // required skills normalize + SPLIT by comma
+  const requiredSet = requiredSkills
+    .flatMap(skill =>
+      skill
+        .toLowerCase()
+        .split(',')          // 👈 MAIN FIX
+        .map(s => s.trim())
+    );
+
+  console.log("Student Skills:", studentSet);
+  console.log("Required Skills:", requiredSet);
+
+  const matched = requiredSet.filter(skill => studentSet.includes(skill));
+
+  console.log("Matching Skills:", matched);
+
+  return matched.length;
+}
+
+
 
 router.post('/create', isAuthenticated, hasRole('placement-manager'), async (req, res) => {
   try {
@@ -94,6 +126,20 @@ router.post('/create', isAuthenticated, hasRole('placement-manager'), async (req
     }).populate('course');
 
     for (let student of students) {
+
+      const resume = await Resume.findOne({ user: student._id, isCompleted: true });
+
+      if(!resume) continue; // Skip if no completed resume
+
+
+      const matchedSkillCount = countMatchingSkills(
+        resume.skills,
+        placement.requirements.knowledge
+      );
+
+      if (matchedSkillCount < 2) continue;
+
+
       // Create notification
       const notification = new Notification({
         user: student._id,

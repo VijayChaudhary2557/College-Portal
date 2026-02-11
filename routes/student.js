@@ -11,6 +11,9 @@ const Section = require('../models/Section');
 const Subject = require('../models/Subject');
 const Notification = require('../models/Notification');
 const Resume = require('../models/Resume');
+const puppeteer = require('puppeteer');
+const path = require('path');
+const ejs = require('ejs');
 
 // Admission form
 router.get('/admission', async (req, res) => {
@@ -352,20 +355,82 @@ router.post('/resume', isAuthenticated, hasRole('student'), async (req, res) => 
     }
 });
 
+
+function countMatchingSkills(studentSkills = [], requiredSkills = []) {
+
+  // student skills normalize
+  const studentSet = studentSkills.map(s => s.toLowerCase().trim());
+
+  // required skills normalize + SPLIT by comma
+  const requiredSet = requiredSkills
+    .flatMap(skill =>
+      skill
+        .toLowerCase()
+        .split(',')          // 👈 MAIN FIX
+        .map(s => s.trim())
+    );
+
+  console.log("Student Skills:", studentSet);
+  console.log("Required Skills:", requiredSet);
+
+  const matched = requiredSet.filter(skill => studentSet.includes(skill));
+
+  console.log("Matching Skills:", matched);
+
+  return matched.length;
+}
+
+
+
+
 // Placements
 router.get('/placements', isAuthenticated, hasRole('student'), async (req, res) => {
   try {
     const student = await User.findById(req.session.user.id);
+
+    const resume = await Resume.findOne({
+      user: student._id,
+      isCompleted: true
+    });
+
+     if (!resume) {
+      return res.render('student/placements', {
+        title: 'Placements',
+        placements: [],
+        notifications: [],
+        warning: 'Please complete your resume to see placement opportunities'
+      });
+    }
+
     const placements = await Placement.find({
       eligibleCourses: student.course,
       isActive: true
     }).sort('-createdAt');
 
+    let EligiblePlacements = [];
+
     // Check which placements student has applied for
     for (let placement of placements) {
-      const application = placement.applications.find(app => app.student.toString() === student._id.toString());
-      placement.userApplication = application || null;
+      const matchedSkillCount = countMatchingSkills(
+        resume.skills,
+        placement.requirements.knowledge
+      );
+
+      if (matchedSkillCount >= 2) {
+        const application = placement.applications.find(
+          app => app.student.toString() === student._id.toString()
+        );
+
+        console.log("Placement: " + placement);
+
+        placement.userApplication = application || null;
+        placement.matchedSkillCount = matchedSkillCount;
+
+        EligiblePlacements.push(placement);
+      }
     }
+
+    console.log("Eligible Placements: ", EligiblePlacements);
 
     // Get notifications
     const notifications = await Notification.find({
@@ -375,13 +440,83 @@ router.get('/placements', isAuthenticated, hasRole('student'), async (req, res) 
 
     res.render('student/placements', {
       title: 'Placements',
-      placements,
+      placements: EligiblePlacements,
       notifications
     });
   } catch (error) {
     console.error('Placements error:', error);
     req.session.error_msg = 'Error loading placements';
     res.redirect('/student/dashboard');
+  }
+});
+
+//   const resume = await Resume.findOne({ user: req.session.user.id });
+
+//   const html = await ejs.renderFile(
+//     path.join(__dirname, '../views/student/view-resume.ejs'),
+//     { resume }
+//   );
+
+//   const browser = await puppeteer.launch();
+//   const page = await browser.newPage();
+
+//   await page.setContent(html, { waitUntil: 'networkidle0' });
+
+//   const pdf = await page.pdf({
+//     format: 'A4',
+//     printBackground: true
+//   });
+
+//   await browser.close();
+
+//   res.set({
+//     'Content-Type': 'application/pdf',
+//     'Content-Disposition': 'attachment; filename=resume.pdf'
+//   });
+
+//   res.send(pdf);
+// });
+
+router.get('/resume/download', isAuthenticated, async (req, res) => {
+  try {
+    const resume = await Resume.findOne({ user: req.session.user.id });
+    if (!resume) return res.status(404).send('Resume not found');
+
+    const html = await ejs.renderFile(
+      path.join(__dirname, '../views/student/resume-pdf.ejs'),
+      { resume }
+    );
+
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    const page = await browser.newPage();
+
+    await page.setContent(html, {
+      waitUntil: 'networkidle0'
+    });
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true
+    });
+
+    await browser.close();
+
+    // ✅ VERY IMPORTANT HEADERS
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="resume.pdf"'
+    );
+    res.setHeader('Content-Length', pdfBuffer.length);
+
+    res.end(pdfBuffer); // ✅ res.end NOT res.send
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('PDF generation failed');
   }
 });
 

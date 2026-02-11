@@ -131,6 +131,9 @@ router.post('/login', async (req, res) => {
     if(role == 'placement-manager')
       sessionRole = 'placement-manager';
 
+
+    console.log('🔍 Determined session role:', sessionRole);
+
     console.log('🔍 Setting session role as:', sessionRole);
     
     req.session.user = {
