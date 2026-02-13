@@ -1,12 +1,8 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-const dns = require("dns");
-
 const connectDB = async () => {
   try {
-    dns.setServers(["1.1.1.1", "8.8.8.8"]); // Use Cloudflare and Google DNS for better reliability
-
     const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/college-portal';
     
     const conn = await mongoose.connect(mongoURI, {
@@ -54,3 +50,4 @@ process.on('SIGINT', async () => {
 
 module.exports = connectDB;
 
+connectDB();

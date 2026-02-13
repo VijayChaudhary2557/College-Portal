@@ -156,3 +156,57 @@ exports.sendPlacementReminder = async (email, placementName, driveDate) => {
   return await exports.sendEmail(email, subject, html);
 };
 
+exports.sendReminderNotificationEmail = async (email, placementName, jobTitle, timeframe, date) => {
+  // Determine if this is deadline or drive notification
+  const isDeadline = timeframe.includes('TODAY') || timeframe.includes('TOMORROW');
+  const isDeadlineNotif = timeframe === 'TODAY' || timeframe === 'TOMORROW';
+  
+  let subject, html;
+  
+  if (isDeadlineNotif && timeframe) {
+    // This is a deadline approaching notification
+    subject = `⏰ Last Date To Apply Is ${timeframe}!`;
+    html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #F44336;">⏰ Deadline Alert - ${timeframe}!</h2>
+        <p>Dear Student,</p>
+        <p><strong>Don't miss this great opportunity!</strong></p>
+        <div style="background-color: #ffebee; border-left: 4px solid #F44336; padding: 20px; margin: 20px 0; border-radius: 5px;">
+          <p style="margin-top: 0;"><strong>Company:</strong> ${placementName}</p>
+          <p><strong>Position:</strong> ${jobTitle}</p>
+          <p style="margin-bottom: 0;"><strong>Last Date to Apply:</strong> <span style="color: #F44336; font-weight: bold;">${timeframe}</span></p>
+        </div>
+        <p style="color: #d32f2f; font-weight: bold;">⚠️ Apply immediately before the deadline expires!</p>
+        <p>Log in to the College Portal now to submit your application.</p>
+        <p>Best regards,<br>Placement Cell</p>
+      </div>
+    `;
+  } else {
+    // This is a drive scheduled notification
+    subject = `🎯 Placement Drive Scheduled For ${timeframe}!`;
+    html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #4CAF50;">🎯 Placement Drive ${timeframe}!</h2>
+        <p>Dear Student,</p>
+        <p><strong>Get ready! Your placement drive is coming up!</strong></p>
+        <div style="background-color: #e8f5e9; border-left: 4px solid #4CAF50; padding: 20px; margin: 20px 0; border-radius: 5px;">
+          <p style="margin-top: 0;"><strong>Company:</strong> ${placementName}</p>
+          <p><strong>Position:</strong> ${jobTitle}</p>
+          <p style="margin-bottom: 0;"><strong>Drive Date:</strong> <span style="color: #4CAF50; font-weight: bold;">${timeframe}</span></p>
+        </div>
+        <p>Make sure you:</p>
+        <ul>
+          <li>Review your resume</li>
+          <li>Prepare your introduction and projects</li>
+          <li>Check the drive details on the portal</li>
+          <li>Arrive on time for the drive</li>
+        </ul>
+        <p>Best of luck with your interview!</p>
+        <p>Best regards,<br>Placement Cell</p>
+      </div>
+    `;
+  }
+  
+  return await exports.sendEmail(email, subject, html);
+};
+

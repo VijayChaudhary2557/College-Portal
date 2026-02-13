@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
+const cron = require('node-cron');
 require('dotenv').config();
 
 // Database connection
@@ -73,8 +74,53 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', { error: err.message });
 });
 
+// ============================================
+// 🔔 PLACEMENT NOTIFICATION SCHEDULER
+// ============================================
+// Initialize scheduler after server starts
+const initializeScheduler = () => {
+  const { runRealtimePlacementNotifications, runDailyTasks } = require('./utils/scheduler');
+
+  console.log('⏰ [Scheduler] Initializing placement notification scheduler...');
+
+  // Run real-time notifications every 2 hours
+  // Schedule: Every 2 hours (0:00, 2:00, 4:00, 6:00, etc.)
+  const realtimeJob = cron.schedule('0 */2 * * *', async () => {
+    console.log(`\n📅 [${new Date().toLocaleString()}] ⏰ Real-time placement notifications scheduler triggered`);
+    await runRealtimePlacementNotifications();
+  });
+
+  // Also run on server startup for immediate check
+  console.log('🚀 [Scheduler] Running initial placement notification check...');
+  runRealtimePlacementNotifications().catch(err => {
+    console.error('❌ [Scheduler] Error in initial check:', err);
+  });
+
+  // Run daily tasks at 11:55 PM (23:55) to auto-apply leaves and send reminders for next day
+  const dailyJob = cron.schedule('55 23 * * *', async () => {
+    console.log(`\n📅 [${new Date().toLocaleString()}] 🌙 Daily tasks scheduler triggered`);
+    await runDailyTasks();
+  });
+
+  console.log('✅ [Scheduler] Placement notification scheduler initialized successfully');
+  console.log('   • Real-time checks: Every 2 hours (at :00 minutes of every even hour)');
+  console.log('   • Daily tasks: Every day at 23:55 (11:55 PM)');
+  console.log('   • Initial check: Just ran');
+};
+
+// Start scheduler after server is listening
+let schedulerInitialized = false;
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
+  
+  // Initialize scheduler after a short delay to ensure DB connection
+  setTimeout(() => {
+    if (!schedulerInitialized) {
+      initializeScheduler();
+      schedulerInitialized = true;
+    }
+  }, 2000);
 });
 

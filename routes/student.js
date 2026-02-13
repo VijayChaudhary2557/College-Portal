@@ -15,6 +15,19 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 const ejs = require('ejs');
 
+// Helper: Get unread notification count for authenticated students
+const getUnreadNotificationCount = async (userId) => {
+  try {
+    return await Notification.countDocuments({
+      user: userId,
+      isRead: false
+    });
+  } catch (error) {
+    console.error('Error fetching unread count:', error);
+    return 0;
+  }
+};
+
 // Admission form
 router.get('/admission', async (req, res) => {
   try {
@@ -141,7 +154,8 @@ router.get('/dashboard', isAuthenticated, hasRole('student'), async (req, res) =
       title: 'Student Dashboard',
       student,
       todaySchedule,
-      subjectAttendance
+      subjectAttendance,
+      unreadNotificationCount: await getUnreadNotificationCount(student._id)
     });
   } catch (error) {
     console.error('Dashboard error:', error);
@@ -155,7 +169,8 @@ router.get('/leave', isAuthenticated, hasRole('student'), async (req, res) => {
   try {
     const student = await User.findById(req.session.user.id);
     const leaves = await Leave.find({ student: student._id }).sort('-date');
-    res.render('student/leave', { title: 'Apply Leave', leaves });
+    const unreadCount = await getUnreadNotificationCount(student._id);
+    res.render('student/leave', { title: 'Apply Leave', leaves, unreadNotificationCount: unreadCount });
   } catch (error) {
     console.error('Leave error:', error);
     req.session.error_msg = 'Error loading leave page';
@@ -191,9 +206,11 @@ router.get('/resume', isAuthenticated, hasRole('student'), async (req, res) => {
     const resume = await Resume.findOne({
       user: req.session.user.id
     });
+    const unreadCount = await getUnreadNotificationCount(req.session.user.id);
     res.render('student/resume', {
       title: 'My Resume',
-      resume   // 👈 EJS ko bhej diya
+      resume,   // 👈 EJS ko bhej diya
+      unreadNotificationCount: unreadCount
     });
   } catch (error) {
     console.error('Resume page error:', error);
@@ -218,7 +235,8 @@ router.get(
 
       res.render('student/view-resume', {
         title: 'My Resume',
-        resume
+        resume,
+        unreadNotificationCount: await getUnreadNotificationCount(req.session.user.id)
       });
     } catch (err) {
       console.error(err);
@@ -383,6 +401,35 @@ function countMatchingSkills(studentSkills = [], requiredSkills = []) {
 
 
 
+// Notifications
+router.get('/notifications', isAuthenticated, hasRole('student'), async (req, res) => {
+  try {
+    const student = await User.findById(req.session.user.id).populate('course section');
+    
+    // Get all notifications
+    const notifications = await Notification.find({
+      user: student._id
+    }).sort('-createdAt').populate('placement');
+
+    // Count unread notifications
+    const unreadCount = await Notification.countDocuments({
+      user: student._id,
+      isRead: false
+    });
+
+    res.render('student/notifications', {
+      title: 'Notifications',
+      notifications,
+      unreadNotificationCount: unreadCount,
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error('Notifications error:', error);
+    req.session.error_msg = 'Error loading notifications';
+    res.redirect('/student/dashboard');
+  }
+});
+
 // Placements
 router.get('/placements', isAuthenticated, hasRole('student'), async (req, res) => {
   try {
@@ -397,7 +444,7 @@ router.get('/placements', isAuthenticated, hasRole('student'), async (req, res) 
       return res.render('student/placements', {
         title: 'Placements',
         placements: [],
-        notifications: [],
+        unreadNotificationCount: await getUnreadNotificationCount(student._id),
         warning: 'Please complete your resume to see placement opportunities'
       });
     }
@@ -432,16 +479,10 @@ router.get('/placements', isAuthenticated, hasRole('student'), async (req, res) 
 
     console.log("Eligible Placements: ", EligiblePlacements);
 
-    // Get notifications
-    const notifications = await Notification.find({
-      user: student._id,
-      isRead: false
-    }).sort('-createdAt').limit(10);
-
     res.render('student/placements', {
       title: 'Placements',
       placements: EligiblePlacements,
-      notifications
+      unreadNotificationCount: await getUnreadNotificationCount(student._id)
     });
   } catch (error) {
     console.error('Placements error:', error);

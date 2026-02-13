@@ -18,6 +18,15 @@
                 <% } else if (user.position === 'student' || user.role === 'student') { %>
                     <a href="/student/leave" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all flex items-center gap-2"><i class="bi bi-calendar-check"></i> Leave</a>
                     <a href="/student/resume" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all flex items-center gap-2"><i class="bi bi-file-text"></i> Resume</a>
+                    <a href="/student/notifications" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all flex items-center gap-2 relative">
+                        <i class="bi bi-bell"></i> 
+                        <span>Notifications</span>
+                        <% if (typeof unreadNotificationCount !== 'undefined' && unreadNotificationCount > 0) { %>
+                            <span class="absolute -top-1 -right-2 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                                <%= unreadNotificationCount > 9 ? '9+' : unreadNotificationCount %>
+                            </span>
+                        <% } %>
+                    </a>
                     <a href="/student/placements" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all flex items-center gap-2"><i class="bi bi-briefcase"></i> Placements</a>
                 <% } else if (user.position === 'hod') { %>
                     <a href="/hod/sections" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all flex items-center gap-2"><i class="bi bi-diagram-3"></i> Sections</a>
@@ -68,6 +77,15 @@
                     <a href="/admin/admissions" class="px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700/50 flex items-center gap-2"><i class="bi bi-person-plus"></i> Admissions</a>
                 <% } else if (user.position === 'student' || user.role === 'student') { %>
                     <a href="/student/leave" class="px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700/50 flex items-center gap-2"><i class="bi bi-calendar-check"></i> Leave</a>
+                    <a href="/student/notifications" class="px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700/50 flex items-center gap-2 relative">
+                        <i class="bi bi-bell"></i> 
+                        <span>Notifications</span>
+                        <% if (typeof unreadNotificationCount !== 'undefined' && unreadNotificationCount > 0) { %>
+                            <span class="inline-flex items-center justify-center ml-2 px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full">
+                                <%= unreadNotificationCount > 9 ? '9+' : unreadNotificationCount %>
+                            </span>
+                        <% } %>
+                    </a>
                     <a href="/student/placements" class="px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700/50 flex items-center gap-2"><i class="bi bi-briefcase"></i> Placements</a>
                 <% } else if (user.position === 'hod') { %>
                     <a href="/hod/sections" class="px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700/50 flex items-center gap-2"><i class="bi bi-diagram-3"></i> Sections</a>

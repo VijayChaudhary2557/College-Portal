@@ -3,27 +3,12 @@
 
 <div class="min-h-screen gradient-bg">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
+        <div class="mb-8 flex items-center justify-between">
             <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
                 <span class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center"><i class="bi bi-briefcase"></i></span>
                 Placement Opportunities
             </h1>
         </div>
-
-        <% if (notifications && notifications.length > 0) { %>
-            <div class="rounded-2xl bg-amber-500/20 border border-amber-400/40 overflow-hidden mb-6">
-                <div class="px-6 py-3 border-b border-amber-400/40 bg-amber-500/30 text-amber-100 font-semibold flex items-center gap-2">
-                    <i class="bi bi-bell"></i> Notifications
-                </div>
-                <div class="p-4 space-y-2">
-                    <% notifications.forEach(notif => { %>
-                        <div class="p-3 rounded-xl bg-white/10 text-white flex items-start justify-between gap-3">
-                            <div><strong><%= notif.title %>:</strong> <%= notif.message %></div>
-                        </div>
-                    <% }); %>
-                </div>
-            </div>
-        <% } %>
 
         <% if (placements && placements.length > 0) { %>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
